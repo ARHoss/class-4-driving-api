@@ -28,9 +28,9 @@ MongoClient.connect(connectionString, { useUnifiedTopology: true})
     .then(client => {
         console.log('connected to database');
         // Datbase name
-        db = client.db('Islamic-info')
+        db = client.db('class-4-driving-api')
         // Database collection name
-        collectionName = db.collection('99-names-of-Allah')
+        collectionName = db.collection('questions')
 
         // Listener on port provided by the environment or 3000
         app.listen(process.env.PORT || PORT, function() {
@@ -38,6 +38,7 @@ MongoClient.connect(connectionString, { useUnifiedTopology: true})
         })
 })
 .catch(console.error);
+
 
 // main page
 app.get('/', (req, res) => {
@@ -47,72 +48,65 @@ app.get('/', (req, res) => {
 
 // API Code
 
-// send all names
+// send all questions
 app.get('/api', (req,res) => {
     // Mongo read query
-    db.collection('99-names-of-Allah').find().toArray()//insert all the objects to an array
+    collectionName.find().toArray()//insert all the objects to an array
        // Mongo returns a promise
        .then(data => {
-           console.log('Successfully Received All Names');
+           console.log('Successfully Received All Questions');
            // Sedning all JSON object to the user
            res.json(data)
        })
        .catch(error => console.error(error))
 })
 
-// send requested name
-app.get('/api/:order', (req,res) => {
+// send requested question number
+app.get('/api/:questionNumber', (req,res) => {
    
    // Query parameter
    let data = {
-       'order': Number(req.params.order)
+       'questionNumber': Number(req.params.questionNumber)
    };
+   console.log(data)
 
-   if(data['order'] <= 99 && data['order'] >= 1){
-       // Mongo read query
-       db.collection('99-names-of-Allah').findOne(data)
-           // Mongo returns a promise
-           .then(data => {
-               console.log('Successfully Received 1 Name');
-               // Sedning JSON object to the user
-               res.json(data)
-           })
-           .catch(error => console.error(error))
-   }else{
-       const error = {
-           'error':'incorrect parameter',
-           'resolve': 'example: 1st or 2nd, 3rd.....'
-       }
-       res.json(error);
-   }
 
-   
+    // Mongo read query
+    collectionName.findOne(data)
+        // Mongo returns a promise
+        .then(data => {
+            console.log('Successfully Received 1 Question');
+            // Sedning JSON object to the user
+            
+            if(data){
+                res.json(data)
+
+            }else{
+                res.json('No question available on the number');
+            }
+            
+        })
+        .catch(error => console.error(error)) 
 })
 
+// create post using postman
+let num = 1;
+app.post('/api/addQuestion', (req, res) => {
 
-// create
-
-// Variable to increment
-// let order = 99;
-
-// app.post('/addNames', (req, res) => {
-
-    // Incrementing order variable by 1
-    // order = order+1;
-
+    num++;
     // Receives data from postman
-//     const data = {
-//         order:      order,
-//         name:       req.body.name,
-//         meaning:    req.body.meaning
-//     }
+    const data = {
+        questionNumber:      num,
+        question:       req.body.question,
+        answer:    req.body.answer
+    }
     // Mongo create a new document
-//     collectionName.insertOne(data)
-//         .then(result => {
-//             console.log('Create Request Completed');
+    collectionName.insertOne(data)
+        .then(result => {
+            console.log('Create Request Completed');
             // Refreshes the page
-//             res.redirect('/api');
-//         })
-//         .catch(error => console.error(error))
+            res.redirect('/api');
+        })
+        .catch(error => console.error(error))
     
-// });    
+});    
