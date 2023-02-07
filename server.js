@@ -68,8 +68,6 @@ app.get('/api/:questionNumber', (req,res) => {
    let data = {
        'questionNumber': Number(req.params.questionNumber)
    };
-   console.log(data)
-
 
     // Mongo read query
     collectionName.findOne(data)
